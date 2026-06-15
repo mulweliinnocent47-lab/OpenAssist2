@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.openassist.knowledge.KnowledgeBaseCatalog
+import com.openassist.knowledge.KnowledgeIndexEngine
 import com.openassist.ui.navigation.OpenAssistDestination
 import com.openassist.ui.navigation.PremiumButton
 import com.openassist.ui.navigation.PremiumCard
@@ -22,6 +23,9 @@ import com.openassist.ui.navigation.premiumTextColor
 
 @Composable
 fun KnowledgeBaseScreen(onBack: () -> Unit, onNavigate: (OpenAssistDestination) -> Unit = {}) {
+    val indexEngine = KnowledgeIndexEngine()
+    val chunks = indexEngine.indexText("welcome", "OpenAssist can index PDFs, notes, code projects, images, workspace documents, and TXT files for source-aware search.")
+    val results = indexEngine.search(chunks, "workspace code search")
     PremiumPage(
         title = "My Knowledge",
         subtitle = "Upload PDFs, DOCX, TXT, ZIPs, code projects, and images so OpenAssist can answer questions about them.",
@@ -38,6 +42,12 @@ fun KnowledgeBaseScreen(onBack: () -> Unit, onNavigate: (OpenAssistDestination) 
             PremiumButton("Upload files") { }
             Spacer(Modifier.width(12.dp))
             PremiumButton("Ask My Knowledge") { }
+        }
+        Spacer(Modifier.height(12.dp))
+        PremiumCard(selected = true) {
+            Text("Index engine", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+            Text(indexEngine.summarizeIndex(chunks), color = premiumMutedTextColor())
+            Text("Search preview: ${results.firstOrNull()?.chunk?.chunkId ?: "No match"}", color = premiumMutedTextColor())
         }
         Spacer(Modifier.height(12.dp))
         KnowledgeBaseCatalog.defaultCollections.forEach { collection ->

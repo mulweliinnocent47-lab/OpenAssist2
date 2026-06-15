@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.openassist.core.UserFacingErrors
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -42,7 +43,7 @@ class CallTool(private val context: Context) : Tool {
             context.startActivity(intent)
             ToolResult(name, "Calling $phoneNumber…")
         } catch (e: Exception) {
-            ToolResult(name, "Failed to initiate call: ${e.message}")
+            ToolResult(name, UserFacingErrors.tool("start the phone call", e))
         }
     }
 }

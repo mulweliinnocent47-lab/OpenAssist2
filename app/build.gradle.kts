@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.github.triplet.play")
 }
 
 android {
@@ -18,6 +19,15 @@ android {
     }
 
     buildFeatures { compose = true }
+}
+
+play {
+    defaultToAppBundles.set(true)
+    track.set(providers.gradleProperty("playTrack").orElse("internal"))
+    releaseStatus.set(com.github.triplet.gradle.androidpublisher.ReleaseStatus.DRAFT)
+    serviceAccountCredentials.set(
+        layout.projectDirectory.file(providers.gradleProperty("playServiceAccountJson").orElse("play-service-account.json").get()),
+    )
 }
 
 dependencies {

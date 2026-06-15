@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import com.openassist.core.UserFacingErrors
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -168,7 +169,7 @@ class FileTool(private val context: Context) : Tool {
                 ?: return ToolResult(name, "Could not open '$fileName'.")
             ToolResult(name, text)
         } catch (e: Exception) {
-            ToolResult(name, "Error reading '$fileName': ${e.message}")
+            ToolResult(name, UserFacingErrors.tool("read $fileName", e))
         }
     }
 
@@ -207,7 +208,7 @@ class FileTool(private val context: Context) : Tool {
                     return ToolResult(name, "File too large (${formatSize(target.length())}; limit ${formatSize(FILE_SIZE_LIMIT)}).")
                 }
                 try { ToolResult(name, target.readText()) }
-                catch (e: Exception) { ToolResult(name, "Error reading file: ${e.message}") }
+                catch (e: Exception) { ToolResult(name, UserFacingErrors.tool("read ${target.name}", e)) }
             }
             else -> ToolResult(name, "Unknown action '$action'. Use 'list' or 'read'.")
         }

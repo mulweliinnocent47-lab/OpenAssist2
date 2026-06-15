@@ -99,3 +99,41 @@ object AgentEngineCatalog {
         goal = AgentGoal("custom-goal", goalText.ifBlank { samplePlan.goal.prompt }, AgentRunStatus.Planning),
     )
 }
+
+data class AgentRunSnapshot(
+    val plan: AgentPlan,
+    val status: AgentRunStatus,
+    val completedTasks: Int,
+    val nextAction: String,
+    val auditTrail: List<String>,
+)
+
+class AgentPlanningEngine {
+    fun plan(goalText: String): AgentRunSnapshot {
+        val plan = AgentEngineCatalog.buildDraftPlan(goalText)
+        return AgentRunSnapshot(
+            plan = plan,
+            status = if (plan.requiresConfirmation) AgentRunStatus.WaitingForApproval else AgentRunStatus.Executing,
+            completedTasks = 0,
+            nextAction = if (plan.requiresConfirmation) "Request user approval for ${confirmationCount(plan)} tool call(s)." else "Start safe task execution.",
+            auditTrail = listOf("Goal accepted", "Plan generated", "Risk scan complete"),
+        )
+    }
+
+    fun approve(plan: AgentPlan): AgentRunSnapshot {
+        val approvedTasks = plan.tasks.map { task ->
+            val newStatus = if (task.status == AgentTaskStatus.NeedsConfirmation) AgentTaskStatus.Approved else task.status
+            task.copy(status = newStatus)
+        }
+        val approvedPlan = plan.copy(goal = plan.goal.copy(status = AgentRunStatus.Executing), tasks = approvedTasks)
+        return AgentRunSnapshot(
+            plan = approvedPlan,
+            status = AgentRunStatus.Executing,
+            completedTasks = approvedTasks.count { it.status == AgentTaskStatus.Done },
+            nextAction = approvedTasks.firstOrNull { it.status in setOf(AgentTaskStatus.Planned, AgentTaskStatus.Approved) }?.title ?: "Finalize result",
+            auditTrail = listOf("Plan approved", "Execution queue created", "Progress monitor active"),
+        )
+    }
+
+    private fun confirmationCount(plan: AgentPlan): Int = plan.tasks.sumOf { task -> task.toolCalls.count { it.requiresConfirmation } }
+}

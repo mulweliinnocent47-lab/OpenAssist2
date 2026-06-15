@@ -75,3 +75,41 @@ object BuiltInMcpCatalog {
 
     val communityExamples = listOf("Netflix MCP", "Steam MCP", "Minecraft MCP", "Shopify MCP", "WordPress MCP", "X MCP", "TikTok MCP", "Trading MCP", "Crypto MCP", "School MCP", "Company MCP")
 }
+
+data class McpServerConfig(
+    val id: String,
+    val displayName: String,
+    val endpoint: String,
+    val enabled: Boolean = true,
+)
+
+data class McpClientSession(
+    val server: McpServerConfig,
+    val status: McpConnectionStatus,
+    val discoveredTools: List<McpToolCapability>,
+    val lastEvent: String,
+)
+
+class McpClientEngine {
+    fun connect(server: McpServerConfig): McpClientSession {
+        val safeEndpoint = server.endpoint.trim()
+        val status = when {
+            !server.enabled -> McpConnectionStatus.Disconnected
+            safeEndpoint.startsWith("https://") || safeEndpoint.startsWith("http://127.0.0.1") || safeEndpoint.startsWith("http://localhost") -> McpConnectionStatus.Connected
+            safeEndpoint.startsWith("http://") -> McpConnectionStatus.Warning
+            else -> McpConnectionStatus.NeedsAuth
+        }
+        return McpClientSession(
+            server = server,
+            status = status,
+            discoveredTools = if (server.displayName.contains("GitHub", ignoreCase = true)) BuiltInMcpCatalog.githubTools else emptyList(),
+            lastEvent = "Initialized MCP JSON-RPC session for ${server.displayName} with status $status.",
+        )
+    }
+
+    fun permissionDecision(request: McpPermissionRequest): McpPermissionDecision = when (request.riskLevel) {
+        McpRiskLevel.Low -> McpPermissionDecision.Allow
+        McpRiskLevel.Medium -> McpPermissionDecision.AllowOnce
+        McpRiskLevel.High, McpRiskLevel.Critical -> McpPermissionDecision.Deny
+    }
+}

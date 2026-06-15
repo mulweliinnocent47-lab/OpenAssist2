@@ -2,6 +2,7 @@ package com.openassist.tools
 
 import android.content.Context
 import android.content.Intent
+import com.openassist.core.UserFacingErrors
 import android.content.pm.PackageManager
 import android.os.Build
 import kotlinx.serialization.json.JsonObject
@@ -56,7 +57,7 @@ class OpenAppTool(private val context: Context) : Tool {
             context.startActivity(launchIntent)
             ToolResult(name, "Launched $packageName.")
         } catch (e: Exception) {
-            ToolResult(name, "Failed to launch '$packageName': ${e.message}")
+            ToolResult(name, UserFacingErrors.tool("open $packageName", e))
         }
     }
 }

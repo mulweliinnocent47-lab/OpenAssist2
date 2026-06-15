@@ -2,6 +2,7 @@ package com.openassist.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openassist.core.UserFacingErrors
 import com.openassist.data.ai.AiMode
 import com.openassist.data.ai.HybridProvider
 import com.openassist.data.ai.LocalLlmProvider
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import java.util.Locale
 import kotlinx.serialization.json.jsonPrimitive
 
 data class ChatUiState(
@@ -61,6 +63,21 @@ class ChatViewModel(
             error      = null,
         )
 
+        detectDeviceToolRequest(trimmed)?.let { request ->
+            val summary = buildConfirmationSummary(
+                request = request,
+                safetyMessage = "OpenAssist recognized this as a device action. Review the details, then approve to execute it with Android permissions.",
+            )
+            _state.value = _state.value.copy(
+                messages = nextMessages + ChatMessage(role = "assistant", content = summary),
+                pendingToolRequest = request,
+                pendingToolSummary = summary,
+                loading = false,
+                error = null,
+            )
+            return
+        }
+
         viewModelScope.launch {
             runCatching { runAgentLoop(nextApiHistory) }
                 .onSuccess { (newHistory, reply) ->
@@ -74,7 +91,7 @@ class ChatViewModel(
                     )
                 }
                 .onFailure { err ->
-                    _state.value = _state.value.copy(loading = false, error = err.message)
+                    _state.value = _state.value.copy(loading = false, error = UserFacingErrors.chat(err))
                 }
         }
     }
@@ -102,7 +119,7 @@ class ChatViewModel(
                     )
                 }
                 .onFailure { err ->
-                    _state.value = _state.value.copy(loading = false, error = err.message)
+                    _state.value = _state.value.copy(loading = false, error = UserFacingErrors.chat(err))
                 }
         }
     }
@@ -206,6 +223,42 @@ class ChatViewModel(
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+
+    private fun detectDeviceToolRequest(content: String): ToolRequest? {
+        val normalized = content.trim()
+        parseAlarmRequest(normalized)?.let { return it }
+        parseSmsRequest(normalized)?.let { return it }
+        parseCallRequest(normalized)?.let { return it }
+        return null
+    }
+
+    private fun parseAlarmRequest(content: String): ToolRequest? {
+        val lower = content.lowercase(Locale.US)
+        if (!lower.contains("alarm")) return null
+        val timeMatch = Regex("""\b([01]?\d|2[0-3])[:.]([0-5]\d)\b""").find(content) ?: return null
+        val label = content.substringAfter(timeMatch.value, "").replace(Regex("""^(for|called|named|label(?:ed)?|to)\s+""", RegexOption.IGNORE_CASE), "").trim()
+        return ToolRequest(
+            name = "set_alarm",
+            arguments = buildMap {
+                put("hour", timeMatch.groupValues[1].toInt().toString())
+                put("minute", timeMatch.groupValues[2].toInt().toString())
+                if (label.isNotBlank()) put("label", label)
+            },
+        )
+    }
+
+    private fun parseSmsRequest(content: String): ToolRequest? {
+        val match = Regex("""(?i)\b(?:send\s+)?(?:sms|text)\s+(?:to\s+)?([+()0-9 .-]{3,})\s*[:,-]?\s+(.+)""").find(content) ?: return null
+        val phone = match.groupValues[1].trim()
+        val message = match.groupValues[2].trim()
+        if (message.isBlank()) return null
+        return ToolRequest("send_sms", mapOf("phone_number" to phone, "message" to message))
+    }
+
+    private fun parseCallRequest(content: String): ToolRequest? {
+        val match = Regex("""(?i)\b(?:call|phone|dial)\s+([+()0-9 .-]{3,})\s*$""").find(content) ?: return null
+        return ToolRequest("make_call", mapOf("phone_number" to match.groupValues[1].trim()))
+    }
 
     private fun buildConfirmationSummary(request: ToolRequest, safetyMessage: String): String {
         val details = request.arguments.entries.joinToString("\n") { (key, value) ->

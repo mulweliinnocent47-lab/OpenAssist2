@@ -86,3 +86,25 @@ object VoiceStudioCatalog {
 
     val supportedLanguages = listOf("English (US)", "English (UK)", "Spanish (ES)", "French (FR)", "German (DE)", "Japanese (JP)")
 }
+
+data class VoicePreviewRequest(val text: String, val settings: VoiceStudioSettings = VoiceStudioCatalog.defaultSettings)
+
+data class VoicePreviewResult(val provider: VoiceProviderType, val voiceId: String, val playbackPlan: String, val privacy: String)
+
+class VoiceEngine {
+    fun preview(request: VoicePreviewRequest): VoicePreviewResult {
+        val safeText = request.text.ifBlank { VoiceStudioCatalog.marketplaceVoices.first().previewText }.take(280)
+        val settings = request.settings
+        val privacy = if (settings.selectedProvider.isCloud && settings.cloudVoicesAllowed) {
+            "Cloud synthesis enabled with user-managed provider credentials."
+        } else {
+            "Local Android/downloaded voice synthesis; text stays on device."
+        }
+        return VoicePreviewResult(
+            provider = settings.selectedProvider,
+            voiceId = settings.selectedVoiceId,
+            playbackPlan = "Speak ${safeText.length} characters at ${settings.speed}x speed, ${settings.pitch}x pitch, ${settings.emotion.label} emotion.",
+            privacy = privacy,
+        )
+    }
+}

@@ -3,6 +3,7 @@ package com.openassist.tools
 import android.Manifest
 import android.content.Context
 import android.telephony.SmsManager
+import com.openassist.core.UserFacingErrors
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -56,7 +57,7 @@ class SmsTool(private val context: Context) : Tool {
             }
             ToolResult(name, "SMS sent to $phoneNumber.")
         } catch (e: Exception) {
-            ToolResult(name, "Failed to send SMS: ${e.message}")
+            ToolResult(name, UserFacingErrors.tool("send the SMS", e))
         }
     }
 }

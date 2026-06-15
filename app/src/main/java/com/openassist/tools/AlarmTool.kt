@@ -3,6 +3,7 @@ package com.openassist.tools
 import android.content.Context
 import android.content.Intent
 import android.provider.AlarmClock
+import com.openassist.core.UserFacingErrors
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -60,7 +61,7 @@ class AlarmTool(private val context: Context) : Tool {
             val time = "%02d:%02d".format(hour, minute)
             ToolResult(name, "Alarm set for $time${if (!label.isNullOrBlank()) " — $label" else ""}.")
         } catch (e: Exception) {
-            ToolResult(name, "Failed to set alarm: ${e.message}")
+            ToolResult(name, UserFacingErrors.tool("set the alarm", e))
         }
     }
 }

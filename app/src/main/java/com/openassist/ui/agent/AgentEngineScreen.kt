@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.openassist.agent.AgentEngineCatalog
+import com.openassist.agent.AgentPlanningEngine
 import com.openassist.ui.navigation.OpenAssistDestination
 import com.openassist.ui.navigation.PremiumButton
 import com.openassist.ui.navigation.PremiumCard
@@ -22,7 +23,8 @@ import com.openassist.ui.navigation.premiumTextColor
 
 @Composable
 fun AgentEngineScreen(onBack: () -> Unit) {
-    val plan = AgentEngineCatalog.samplePlan
+    val snapshot = AgentPlanningEngine().plan(AgentEngineCatalog.samplePlan.goal.prompt)
+    val plan = snapshot.plan
     PremiumPage(
         title = "Agent Engine",
         subtitle = "Turn goals into plans, tasks, safe tool calls, confirmations, execution, and results.",
@@ -38,7 +40,8 @@ fun AgentEngineScreen(onBack: () -> Unit) {
         PremiumCard {
             Text("Example goal", color = premiumMutedTextColor(), fontWeight = FontWeight.Bold)
             Text(plan.goal.prompt, color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
-            Text("Status: ${plan.goal.status.label}", color = premiumMutedTextColor())
+            Text("Status: ${snapshot.status.label}", color = premiumMutedTextColor())
+            Text("Next action: ${snapshot.nextAction}", color = premiumMutedTextColor())
         }
         Spacer(Modifier.height(12.dp))
         plan.tasks.forEach { task ->
@@ -51,6 +54,12 @@ fun AgentEngineScreen(onBack: () -> Unit) {
                     Text(call.summary, color = premiumMutedTextColor())
                 }
             }
+        }
+        Spacer(Modifier.height(12.dp))
+        PremiumCard {
+            Text("Live agent loop", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+            Text("Completed tasks: ${snapshot.completedTasks}/${plan.tasks.size}", color = premiumMutedTextColor())
+            snapshot.auditTrail.forEach { event -> Text("• $event", color = premiumMutedTextColor()) }
         }
         Spacer(Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth()) {
