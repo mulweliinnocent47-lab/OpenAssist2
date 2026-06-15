@@ -1,0 +1,46 @@
+package com.openassist.ui.workspace
+
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.openassist.ui.navigation.OpenAssistDestination
+import com.openassist.ui.navigation.PremiumCard
+import com.openassist.ui.navigation.PremiumPage
+import com.openassist.ui.navigation.PremiumPill
+import com.openassist.ui.navigation.premiumMutedTextColor
+import com.openassist.ui.navigation.premiumTextColor
+import com.openassist.workspace.WorkspaceCatalog
+
+@Composable
+fun WorkspaceScreen(onBack: () -> Unit, onCodeCanvas: () -> Unit, onImageStudio: () -> Unit, onProjectExplorer: () -> Unit, onDocumentEditor: () -> Unit, onArtifactManager: () -> Unit, onNavigate: (OpenAssistDestination) -> Unit = {}) {
+    val navigate: (OpenAssistDestination) -> Unit = { if (it == OpenAssistDestination.Chat) onBack() else onNavigate(it) }
+    PremiumPage("Workspace", "Manage generated files, projects, documents, code, images, archives, downloads, artifacts, folders, tags, favorites, and recent files.", OpenAssistDestination.Workspace, navigate) {
+        listOf("Projects", "Documents", "Code", "Images", "Archives", "Downloads", "Artifacts", "Search", "Folders", "Tags", "Favorites").forEach { section ->
+            PremiumCard {
+                Text(section, color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+                Text("Generated artifacts stay organized here instead of overflowing chat bubbles.", color = premiumMutedTextColor())
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+        PremiumCard(selected = true) {
+            Text("Recent artifacts", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+            WorkspaceCatalog.starterArtifacts.forEach { artifact ->
+                Text("${artifact.type.label}: ${artifact.path}", color = premiumMutedTextColor())
+            }
+            Spacer(Modifier.height(12.dp))
+            PremiumPill("Open Code Canvas", onClick = onCodeCanvas)
+            Spacer(Modifier.height(8.dp))
+            PremiumPill("Open Image Studio", onClick = onImageStudio)
+            Spacer(Modifier.height(8.dp))
+            PremiumPill("Open Project Explorer", onClick = onProjectExplorer)
+            Spacer(Modifier.height(8.dp))
+            PremiumPill("Open Document Editor", onClick = onDocumentEditor)
+            Spacer(Modifier.height(8.dp))
+            PremiumPill("Manage Artifacts", onClick = onArtifactManager)
+        }
+    }
+}
