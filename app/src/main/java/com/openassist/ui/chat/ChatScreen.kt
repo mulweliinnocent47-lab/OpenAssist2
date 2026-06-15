@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -59,23 +60,58 @@ fun ChatScreen(
     onContextSidebar: () -> Unit,
 ) {
     val state by chatViewModel.state.collectAsState()
+    val statusText = when {
+        state.pendingToolSummary != null -> "Waiting for approval"
+        state.loading -> "Thinking…"
+        state.error != null -> "Needs attention"
+        else -> "Ready"
+    }
     var input by remember { mutableStateOf("") }
-    val navigate: (OpenAssistDestination) -> Unit = {
-        when (it) {
+    val openDestination: (OpenAssistDestination) -> Unit = { destination ->
+        when (destination) {
             OpenAssistDestination.Chat -> Unit
             OpenAssistDestination.ConversationHistory -> onHistory()
             OpenAssistDestination.Workspace -> onWorkspace()
             OpenAssistDestination.KnowledgeBase -> onKnowledgeBase()
             OpenAssistDestination.ConnectionsHub -> onConnectionsHub()
             OpenAssistDestination.Settings -> onSettings()
-            else -> Unit
+            OpenAssistDestination.ModelSelection, OpenAssistDestination.AiModeSelector -> onModels()
+            OpenAssistDestination.Permissions -> onPermissions()
+            OpenAssistDestination.ToolApproval -> onToolApproval()
+            OpenAssistDestination.MCPServers -> onMcpServers()
+            OpenAssistDestination.About -> onAbout()
+            OpenAssistDestination.ScreenIntelligence -> onScreenIntelligence()
+            OpenAssistDestination.AutomationCenter -> onAutomationCenter()
+            OpenAssistDestination.VoiceOverlay -> onVoiceOverlay()
+            OpenAssistDestination.VoiceStudio -> onVoiceStudio()
+            OpenAssistDestination.ImageStudio -> onImageStudio()
+            OpenAssistDestination.CodeCanvas -> onCodeCanvas()
+            OpenAssistDestination.McpMarketplace -> onMcpMarketplace()
+            OpenAssistDestination.McpConnections -> onMcpConnections()
+            OpenAssistDestination.DesktopBridge -> onDesktopBridge()
+            OpenAssistDestination.AgentEngine -> onAgentEngine()
+            OpenAssistDestination.UniversalSearch -> onUniversalSearch()
+            OpenAssistDestination.CommandPalette -> onCommandPalette()
+            OpenAssistDestination.AgentTaskCenter -> onAgentTaskCenter()
+            OpenAssistDestination.ContextSidebar -> onContextSidebar()
+            else -> onCommandPalette()
         }
     }
+    val navigate: (OpenAssistDestination) -> Unit = openDestination
 
-    PremiumPage("OpenAssist\nHome", "Your premium AI operating system: chat, voice, agents, quick actions, activity, and active model in one place.", OpenAssistDestination.Chat, navigate, action = { PremiumPill("Search", onClick = onUniversalSearch) }) {
+    PremiumPage("OpenAssist", "Chat, tools, voice, agents, files, and knowledge in one polished command center.", OpenAssistDestination.Chat, navigate, action = { PremiumPill(statusText, onClick = onUniversalSearch) }) {
+        PremiumCard(selected = true) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Assistant Command Center", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+                PremiumPill("Models", onClick = onModels)
+            }
+            Text("Ask naturally, then approve sensitive actions like calls, SMS, and alarms before OpenAssist touches the device.", color = premiumMutedTextColor())
+            state.error?.let { Text("Error: $it", color = premiumTextColor(), fontWeight = FontWeight.Bold) }
+        }
+        Spacer(Modifier.height(12.dp))
         LazyColumn(Modifier.weight(1f)) {
             item {
-                PremiumCard(Modifier.fillMaxWidth(0.58f)) {
+                PremiumCard(Modifier.fillMaxWidth(0.82f)) {
                     Text("Assistant", color = premiumMutedTextColor(), fontWeight = FontWeight.Bold)
                     Text("I can plan tasks, generate files, answer from Knowledge, control tools safely, and keep every major feature within 1–2 taps.", color = premiumTextColor())
                 }
@@ -85,7 +121,7 @@ fun ChatScreen(
                     Text("Make this app feel premium and ready for production.", color = premiumTextColor())
                 }
                 Spacer(Modifier.height(12.dp))
-                PremiumCard(Modifier.fillMaxWidth(0.72f).padding(start = 150.dp)) {
+                PremiumCard(Modifier.fillMaxWidth(0.72f).padding(start = 72.dp)) {
                     Text("Tool result", color = premiumMutedTextColor(), fontWeight = FontWeight.Bold)
                     Text("OpenAssist mockups updated successfully.", color = premiumTextColor())
                 }
@@ -112,7 +148,13 @@ fun ChatScreen(
         PremiumCard {
             Text("Quick Actions", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
             ExperienceCatalog.homeQuickActions.take(8).forEach { action ->
-                Text("• ${action.title} — ${action.description}", color = premiumMutedTextColor())
+                Spacer(Modifier.height(8.dp))
+                PremiumCard(selected = false) {
+                    Text(action.title, color = premiumTextColor(), fontWeight = FontWeight.Bold)
+                    Text(action.description, color = premiumMutedTextColor())
+                    Spacer(Modifier.height(6.dp))
+                    PremiumPill("Open", onClick = { openDestination(action.destination) })
+                }
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -133,11 +175,13 @@ fun ChatScreen(
                 }
             }
         }
-        PremiumCard {
+        PremiumCard(selected = true) {
+            Text(if (state.loading) "OpenAssist is working…" else "What can I help with?", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth()) {
-                OutlinedTextField(input, { input = it }, Modifier.weight(1f), placeholder = { Text("Type a message...") })
+                OutlinedTextField(input, { input = it }, Modifier.weight(1f), placeholder = { Text("Try: set alarm 07:30, text +15551234567 hello, or call +15551234567") })
                 Spacer(Modifier.width(12.dp))
-                PremiumButton("Send") { chatViewModel.send(input); input = "" }
+                PremiumButton(if (state.loading) "…" else "Send") { chatViewModel.send(input); input = "" }
             }
         }
         Row(Modifier.fillMaxWidth()) {

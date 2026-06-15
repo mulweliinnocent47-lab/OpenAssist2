@@ -10,7 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.openassist.mcp.BuiltInMcpCatalog
+import com.openassist.mcp.McpClientEngine
 import com.openassist.mcp.McpPermissionRequest
+import com.openassist.mcp.McpServerConfig
 import com.openassist.mcp.McpRiskLevel
 import com.openassist.mcp.McpSafetyPolicy
 import com.openassist.ui.navigation.OpenAssistDestination
@@ -116,10 +118,13 @@ fun DesktopBridgeScreen(onBack: () -> Unit) {
 
 @Composable
 fun McpConnectionsScreen(onBack: () -> Unit, onMarketplace: () -> Unit, onDesktopBridge: () -> Unit) {
+    val session = McpClientEngine().connect(McpServerConfig("github", "GitHub MCP", "https://api.github.com/mcp"))
     PremiumPage("MCP Connections", "Manage active built-in, custom, community, local network, and remote MCP connections.", OpenAssistDestination.McpConnections, { if (it == OpenAssistDestination.Chat) onBack() }) {
         PremiumCard(selected = true) {
             Text("Connections", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
             Text("GitHub, Google Drive, Desktop Bridge, Home Assistant, and custom HTTPS MCP endpoints appear here.", color = premiumMutedTextColor())
+            Text("${session.server.displayName}: ${session.status} • ${session.discoveredTools.size} tools", color = premiumMutedTextColor())
+            Text(session.lastEvent, color = premiumMutedTextColor())
             Spacer(Modifier.height(12.dp))
             PremiumPill("Open Marketplace", onClick = onMarketplace)
             Spacer(Modifier.height(8.dp))

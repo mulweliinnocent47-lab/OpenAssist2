@@ -18,6 +18,8 @@ import com.openassist.ui.navigation.PremiumPage
 import com.openassist.ui.navigation.PremiumPill
 import com.openassist.ui.navigation.premiumMutedTextColor
 import com.openassist.ui.navigation.premiumTextColor
+import com.openassist.voice.VoiceEngine
+import com.openassist.voice.VoicePreviewRequest
 import com.openassist.voice.VoiceStudioCatalog
 import com.openassist.voice.VoiceStudioSettings
 
@@ -30,6 +32,7 @@ fun VoiceStudioScreen(
     onPreview: () -> Unit,
 ) {
     val settings = VoiceStudioCatalog.defaultSettings
+    val preview = VoiceEngine().preview(VoicePreviewRequest("Hello from the wired OpenAssist voice engine.", settings))
     PremiumPage(
         title = "Voice Studio",
         subtitle = "Text to speech uses Android TTS by default, with optional premium cloud and downloadable local voices.",
@@ -45,6 +48,8 @@ fun VoiceStudioScreen(
             Text("Default voice engine", color = premiumTextColor(), fontWeight = FontWeight.ExtraBold)
             Text(settings.selectedProvider.label, color = premiumTextColor(), fontWeight = FontWeight.Bold)
             Text(settings.costAndPrivacySummary, color = premiumMutedTextColor())
+            Text(preview.playbackPlan, color = premiumMutedTextColor())
+            Text(preview.privacy, color = premiumMutedTextColor())
         }
         Spacer(Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth()) {

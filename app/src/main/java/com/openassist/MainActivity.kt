@@ -113,7 +113,7 @@ private fun OpenAssistNavigation(settings: SettingsViewModel, chat: ChatViewMode
         OpenAssistDestination.Chat -> ChatScreen(
             chatViewModel = chat,
             onSettings = { destination = OpenAssistDestination.Settings },
-            onModels = { destination = OpenAssistDestination.AiModeSelector },
+            onModels = { destination = OpenAssistDestination.ModelSelection },
             onPermissions = { destination = OpenAssistDestination.Permissions },
             onToolApproval = { destination = OpenAssistDestination.ToolApproval },
             onMcpServers = { destination = OpenAssistDestination.MCPServers },
@@ -154,7 +154,7 @@ private fun OpenAssistNavigation(settings: SettingsViewModel, chat: ChatViewMode
             onBack = { destination = OpenAssistDestination.Chat },
             onMarketplace = { destination = OpenAssistDestination.McpMarketplace },
             onDesktopBridge = { destination = OpenAssistDestination.DesktopBridge },
-            onModels = { destination = OpenAssistDestination.AiModeSelector },
+            onModels = { destination = OpenAssistDestination.ModelSelection },
         )
         OpenAssistDestination.CorePlatform -> CorePlatformScreen(onBack = { destination = OpenAssistDestination.Settings })
         OpenAssistDestination.Settings -> SettingsScreen(

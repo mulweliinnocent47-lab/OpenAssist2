@@ -1,5 +1,6 @@
 package com.openassist.data.openrouter
 
+import com.openassist.core.UserFacingErrors
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -30,7 +31,7 @@ class OpenRouterRepository(
         messages: List<OpenRouterMessage>,
         tools: List<ToolDefinition> = emptyList(),
     ): Choice {
-        require(apiKey.isNotBlank()) { "Add your OpenRouter API key in Settings first." }
+        require(apiKey.isNotBlank()) { "Add your OpenRouter API key in Settings before using cloud models." }
         val response = api.chat(
             authorization = "Bearer $apiKey",
             request = ChatRequest(
@@ -40,7 +41,7 @@ class OpenRouterRepository(
             ),
         )
         return response.choices.firstOrNull()
-            ?: error("OpenRouter returned an empty response.")
+            ?: error(UserFacingErrors.openRouterEmptyResponse())
     }
 
     suspend fun availableModels(): List<ModelInfo> = api.models().data

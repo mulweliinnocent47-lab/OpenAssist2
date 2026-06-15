@@ -47,11 +47,24 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CALL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
     </queries>
 
     <application
         android:name=".OpenAssistApp"
         android:label="OpenAssist"
+        android:icon="@drawable/app_home_icon"
+        android:roundIcon="@drawable/app_home_icon"
         android:theme="@style/Theme.OpenAssist"
         android:allowBackup="false">
 

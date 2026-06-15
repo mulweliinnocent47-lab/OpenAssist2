@@ -1,6 +1,7 @@
 package com.openassist.tools
 
 import com.openassist.PermissionManager
+import com.openassist.core.UserFacingErrors
 import com.openassist.data.openrouter.ToolDefinition
 import com.openassist.data.openrouter.ToolFunction
 
@@ -49,8 +50,7 @@ class ToolEngine(
                     .map { it.substringAfterLast('.') }
                 return ToolResult(
                     name   = tool.name,
-                    output = "Permission denied: ${denied.joinToString()}. " +
-                             "Grant it in Settings → Apps → OpenAssist → Permissions and try again.",
+                    output = UserFacingErrors.permissionDenied(denied),
                 )
             }
         }

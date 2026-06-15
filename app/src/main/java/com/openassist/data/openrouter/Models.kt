@@ -78,3 +78,26 @@ data class ModelInfo(
     val name: String? = null,
     @SerialName("context_length") val contextLength: Int? = null,
 )
+
+@Serializable
+data class OpenRouterModelOption(
+    val id: String,
+    val displayName: String,
+    val provider: String,
+    val contextLength: Int? = null,
+    val free: Boolean = false,
+    val strengths: List<String> = emptyList(),
+)
+
+object OpenRouterFreeModelCatalog {
+    val freeModels = listOf(
+        OpenRouterModelOption("deepseek/deepseek-r1:free", "DeepSeek R1 Free", "DeepSeek", 163_840, true, listOf("Reasoning", "Coding", "Long context")),
+        OpenRouterModelOption("deepseek/deepseek-chat-v3-0324:free", "DeepSeek Chat V3 Free", "DeepSeek", 163_840, true, listOf("General chat", "Fast drafts")),
+        OpenRouterModelOption("meta-llama/llama-3.3-70b-instruct:free", "Llama 3.3 70B Instruct Free", "Meta", 131_072, true, listOf("Open model", "Instruction following")),
+        OpenRouterModelOption("google/gemini-2.0-flash-exp:free", "Gemini 2.0 Flash Experimental Free", "Google", 1_048_576, true, listOf("Fast", "Large context", "Multimodal-ready")),
+        OpenRouterModelOption("qwen/qwen-2.5-coder-32b-instruct:free", "Qwen 2.5 Coder 32B Free", "Qwen", 32_768, true, listOf("Code", "Refactors", "Debugging")),
+        OpenRouterModelOption("mistralai/mistral-7b-instruct:free", "Mistral 7B Instruct Free", "Mistral AI", 32_768, true, listOf("Lightweight", "Quick answers")),
+    )
+
+    fun byId(id: String): OpenRouterModelOption? = freeModels.firstOrNull { it.id == id }
+}

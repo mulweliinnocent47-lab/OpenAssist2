@@ -59,6 +59,15 @@ object ExperienceCatalog {
         CommandAction("Browse MCP Marketplace", OpenAssistDestination.McpMarketplace, "Install integrations."),
         CommandAction("New Knowledge Collection", OpenAssistDestination.KnowledgeBase, "Create a My Knowledge collection."),
         CommandAction("Export Project", OpenAssistDestination.ZipExportCenter, "Export a project ZIP."),
+        CommandAction("Core Platform", OpenAssistDestination.CorePlatform, "Inspect OpenAssist platform engines."),
+        CommandAction("Safety Settings", OpenAssistDestination.SafetySettings, "Review confirmation and safety controls."),
+        CommandAction("Assistant Permissions", OpenAssistDestination.AssistantPermissions, "Review Android assistant permissions."),
+        CommandAction("MCP Activity", OpenAssistDestination.McpActivityCenter, "Monitor MCP events and tool activity."),
+        CommandAction("MCP Developer Center", OpenAssistDestination.McpDeveloperCenter, "Build and test MCP integrations."),
+        CommandAction("MCP Security", OpenAssistDestination.McpSecurityDashboard, "Review MCP risks and permissions."),
+        CommandAction("Voice Studio", OpenAssistDestination.VoiceStudio, "Configure voice providers and previews."),
+        CommandAction("Storage Manager", OpenAssistDestination.StorageManager, "Manage local models, artifacts, and cache."),
+        CommandAction("Tool Approval", OpenAssistDestination.ToolApproval, "Review sensitive action approvals."),
     )
 
     val contextStatuses = listOf(
